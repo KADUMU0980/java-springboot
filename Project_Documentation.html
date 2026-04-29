@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spring Boot Library Management — Project Documentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #fff; margin: 0; padding: 40px 60px; line-height: 1.7; font-size: 14px; }
+  h1 { font-size: 28px; color: #0f3460; border-bottom: 3px solid #3498db; padding-bottom: 8px; margin-top: 30px; }
+  h2 { font-size: 22px; color: #16213e; border-bottom: 2px solid #e0e0e0; padding-bottom: 6px; margin-top: 36px; }
+  h3 { font-size: 17px; color: #1a1a2e; margin-top: 24px; }
+  h4 { font-size: 15px; color: #333; margin-top: 18px; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+  th { background: #ecf0f1; font-weight: 600; }
+  pre { background: #f5f7fa; border: 1px solid #ddd; border-radius: 6px; padding: 14px 18px; overflow-x: auto; font-size: 12.5px; line-height: 1.5; }
+  code { font-family: 'Fira Code', monospace; font-size: 12.5px; }
+  p code, li code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; }
+  ul, ol { padding-left: 24px; }
+  li { margin-bottom: 4px; }
+  strong { color: #0f3460; }
+  a { color: #2980b9; }
+  img { max-width: 100%; border: 1px solid #ccc; border-radius: 4px; margin: 10px 0; }
+
+  @media print {
+    body { padding: 20px 30px; font-size: 12px; }
+    pre { font-size: 11px; padding: 10px; page-break-inside: avoid; }
+    h1, h2, h3 { page-break-after: avoid; }
+    table { page-break-inside: avoid; }
+    hr { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<h1>Spring Boot Library Management Application</h1>
+<h2>Project Documentation</h2>
+<hr>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#1-introduction">Introduction</a></li>
+<li><a href="#2-entity-relationship-design">Entity Relationship Design</a></li>
+<li><a href="#3-implementation-details">Implementation Details</a><ul>
+<li>3.1 <a href="#31-project-configuration">Project Configuration</a></li>
+<li>3.2 <a href="#32-entity-layer">Entity Layer</a></li>
+<li>3.3 <a href="#33-repository-layer">Repository Layer</a></li>
+<li>3.4 <a href="#34-service-layer">Service Layer</a></li>
+<li>3.5 <a href="#35-controller-layer">Controller Layer</a></li>
+<li>3.6 <a href="#36-view-layer-jsp">View Layer (JSP)</a></li>
+</ul>
+</li>
+<li><a href="#4-crud-operations">CRUD Operations</a><ul>
+<li>4.1 <a href="#41-populate-database">Populate Database</a></li>
+<li>4.2 <a href="#42-create-operation">Create Operation</a></li>
+<li>4.3 <a href="#43-read-operation">Read Operation</a></li>
+<li>4.4 <a href="#44-update-operation">Update Operation</a></li>
+</ul>
+</li>
+<li><a href="#5-testing">Testing</a></li>
+<li><a href="#6-screenshots">Screenshots</a></li>
+<li><a href="#7-challenges-faced-and-solutions">Challenges Faced and Solutions</a></li>
+<li><a href="#8-github-url">GitHub URL</a></li>
+</ol>
+<hr>
+<h2>1. Introduction</h2>
+<p>This project is a <strong>Library Management System</strong> built using <strong>Spring Boot</strong>. It manages two entities — <strong>Author</strong> and <strong>Book</strong> — and demonstrates core CRUD operations (Create, Read, Update) through a web interface built with JSP pages. The application uses an H2 in-memory database, Spring Data JPA for persistence, and follows a layered architecture with separate Repository, Service, and Controller components.</p>
+<hr>
+<h2>2. Entity Relationship Design</h2>
+<h3>Entities</h3>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Attributes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Author</strong></td>
+<td><code>id</code> (PK), <code>name</code>, <code>biography</code></td>
+</tr>
+<tr>
+<td><strong>Book</strong></td>
+<td><code>id</code> (PK), <code>title</code>, <code>isbn</code> (unique), <code>publicationYear</code>, <code>author_id</code> (FK)</td>
+</tr>
+</tbody></table>
+<h3>Relationship</h3>
+<p>The relationship between the two entities is <strong>One-to-Many</strong>:</p>
+<ul>
+<li><strong>One Author</strong> can write <strong>many Books</strong>.</li>
+<li><strong>Each Book</strong> belongs to exactly <strong>one Author</strong>.</li>
+</ul>
+<p>This is implemented using:</p>
+<ul>
+<li><code>@OneToMany(mappedBy = &quot;author&quot;)</code> on the <code>Author</code> entity.</li>
+<li><code>@ManyToOne</code> with <code>@JoinColumn(name = &quot;author_id&quot;)</code> on the <code>Book</code> entity.</li>
+</ul>
+<h3>ER Diagram</h3>
+<pre><code>┌──────────────────────┐          ┌──────────────────────────────┐
+│       AUTHORS        │          │            BOOKS             │
+├──────────────────────┤          ├──────────────────────────────┤
+│ id (PK, BIGINT)      │──┐       │ id (PK, BIGINT)              │
+│ name (VARCHAR, NN)   │  │       │ title (VARCHAR, NN)          │
+│ biography (VARCHAR)  │  │       │ isbn (VARCHAR, UNIQUE, NN)   │
+└──────────────────────┘  │       │ publication_year (INT)       │
+                          └──────&gt;│ author_id (FK, BIGINT, NN)   │
+                         1    *   └──────────────────────────────┘
+</code></pre>
+<p><strong>Legend:</strong> PK = Primary Key, FK = Foreign Key, NN = Not Null</p>
+<hr>
+<h2>3. Implementation Details</h2>
+<h3>3.1 Project Configuration</h3>
+<h4><code>application.properties</code></h4>
+<pre><code class="language-properties">spring.application.name=library-app
+
+# H2 Database configuration
+spring.datasource.url=jdbc:h2:mem:librarydb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=password
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+
+# Enable H2 console
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+# Show SQL queries
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# Initialize database schema and data
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+
+# JSP View Resolver configuration
+spring.mvc.view.prefix=/WEB-INF/jsp/
+spring.mvc.view.suffix=.jsp
+</code></pre>
+<p><strong>Key Dependencies</strong> (<code>pom.xml</code>):</p>
+<ul>
+<li><code>spring-boot-starter-web</code> — Spring MVC</li>
+<li><code>spring-boot-starter-data-jpa</code> — JPA / Hibernate</li>
+<li><code>spring-boot-starter-validation</code> — Bean Validation</li>
+<li><code>h2</code> — In-memory database</li>
+<li><code>tomcat-embed-jasper</code> — JSP rendering</li>
+<li><code>jakarta.servlet.jsp.jstl-api</code> &amp; <code>jakarta.servlet.jsp.jstl</code> — JSTL tag libraries</li>
+</ul>
+<hr>
+<h3>3.2 Entity Layer</h3>
+<h4><code>Author.java</code></h4>
+<pre><code class="language-java">package com.example.libraryapp.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import java.util.List;
+
+@Entity
+@Table(name = &quot;authors&quot;)
+public class Author {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = &quot;Name is mandatory&quot;)
+    @Column(nullable = false)
+    private String name;
+
+    @Column(length = 1000)
+    private String biography;
+
+    @OneToMany(mappedBy = &quot;author&quot;, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List&lt;Book&gt; books;
+
+    // Constructors, Getters, and Setters omitted for brevity
+}
+</code></pre>
+<p><strong>Key JPA Annotations Used:</strong></p>
+<ul>
+<li><code>@Entity</code> — Marks the class as a JPA entity</li>
+<li><code>@Table(name = &quot;authors&quot;)</code> — Maps to the <code>authors</code> table</li>
+<li><code>@Id</code> / <code>@GeneratedValue</code> — Primary key with auto-increment</li>
+<li><code>@NotBlank</code> — Validation constraint</li>
+<li><code>@OneToMany(mappedBy = &quot;author&quot;)</code> — Defines the inverse side of the relationship</li>
+</ul>
+<h4><code>Book.java</code></h4>
+<pre><code class="language-java">package com.example.libraryapp.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+@Entity
+@Table(name = &quot;books&quot;)
+public class Book {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = &quot;Title is mandatory&quot;)
+    @Column(nullable = false)
+    private String title;
+
+    @NotBlank(message = &quot;ISBN is mandatory&quot;)
+    @Column(unique = true, nullable = false)
+    private String isbn;
+
+    @NotNull(message = &quot;Publication year is mandatory&quot;)
+    @Min(value = 1000, message = &quot;Invalid year&quot;)
+    @Column(name = &quot;publication_year&quot;)
+    private Integer publicationYear;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = &quot;author_id&quot;, nullable = false)
+    private Author author;
+
+    // Constructors, Getters, and Setters omitted for brevity
+}
+</code></pre>
+<p><strong>Key JPA Annotations Used:</strong></p>
+<ul>
+<li><code>@ManyToOne</code> — Owning side of the relationship</li>
+<li><code>@JoinColumn(name = &quot;author_id&quot;)</code> — Foreign key column</li>
+<li><code>@Column(unique = true)</code> — Unique constraint for ISBN</li>
+<li><code>@Min(value = 1000)</code> — Validates publication year</li>
+</ul>
+<hr>
+<h3>3.3 Repository Layer</h3>
+<h4><code>AuthorRepository.java</code></h4>
+<pre><code class="language-java">@Repository
+public interface AuthorRepository extends JpaRepository&lt;Author, Long&gt; {
+}
+</code></pre>
+<h4><code>BookRepository.java</code></h4>
+<pre><code class="language-java">@Repository
+public interface BookRepository extends JpaRepository&lt;Book, Long&gt; {
+
+    // Custom query method performing an inner join between Books and Authors
+    @Query(&quot;SELECT b FROM Book b JOIN FETCH b.author&quot;)
+    List&lt;Book&gt; findAllBooksWithAuthors();
+}
+</code></pre>
+<p><strong>Custom Query Explanation:</strong></p>
+<ul>
+<li>The JPQL query <code>SELECT b FROM Book b JOIN FETCH b.author</code> performs an <strong>INNER JOIN</strong> between the <code>books</code> and <code>authors</code> tables.</li>
+<li><code>JOIN FETCH</code> eagerly loads the associated <code>Author</code> for each <code>Book</code> in a single SQL query, avoiding the N+1 query problem.</li>
+<li>This is equivalent to the SQL: <code>SELECT * FROM books b INNER JOIN authors a ON b.author_id = a.id</code></li>
+</ul>
+<hr>
+<h3>3.4 Service Layer</h3>
+<h4><code>AuthorService.java</code></h4>
+<pre><code class="language-java">@Service
+public class AuthorService {
+
+    private final AuthorRepository authorRepository;
+
+    @Autowired
+    public AuthorService(AuthorRepository authorRepository) {
+        this.authorRepository = authorRepository;
+    }
+
+    public List&lt;Author&gt; findAllAuthors() {
+        return authorRepository.findAll();
+    }
+
+    public Author findById(Long id) {
+        return authorRepository.findById(id)
+                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Invalid author Id:&quot; + id));
+    }
+
+    @Transactional
+    public Author saveAuthor(Author author) {
+        return authorRepository.save(author);
+    }
+}
+</code></pre>
+<h4><code>BookService.java</code></h4>
+<pre><code class="language-java">@Service
+public class BookService {
+
+    private final BookRepository bookRepository;
+
+    @Autowired
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
+
+    public List&lt;Book&gt; findAllBooks() {
+        return bookRepository.findAllBooksWithAuthors(); // Using custom query method
+    }
+
+    public Book findById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Invalid book Id:&quot; + id));
+    }
+
+    @Transactional
+    public Book saveBook(Book book) {
+        try {
+            return bookRepository.save(book);
+        } catch (Exception e) {
+            throw new RuntimeException(
+                &quot;Could not save book. Please ensure ISBN is unique and data is valid.&quot;, e);
+        }
+    }
+}
+</code></pre>
+<p><strong>Key Design Decisions:</strong></p>
+<ul>
+<li>Constructor-based dependency injection via <code>@Autowired</code></li>
+<li><code>@Transactional</code> on write operations for data consistency</li>
+<li>Exception handling in <code>saveBook()</code> catches data integrity violations (e.g., duplicate ISBN) and re-throws a user-friendly message</li>
+</ul>
+<hr>
+<h3>3.5 Controller Layer</h3>
+<h4><code>LibraryController.java</code></h4>
+<pre><code class="language-java">@Controller
+@RequestMapping(&quot;/&quot;)
+public class LibraryController {
+
+    private final BookService bookService;
+    private final AuthorService authorService;
+
+    @Autowired
+    public LibraryController(BookService bookService, AuthorService authorService) {
+        this.bookService = bookService;
+        this.authorService = authorService;
+    }
+
+    @GetMapping
+    public String index() {
+        return &quot;redirect:/books&quot;;
+    }
+
+    // Read Operation
+    @GetMapping(&quot;/books&quot;)
+    public String listBooks(Model model) {
+        model.addAttribute(&quot;books&quot;, bookService.findAllBooks());
+        return &quot;book-list&quot;;
+    }
+
+    // Show Create Form
+    @GetMapping(&quot;/books/add&quot;)
+    public String showAddForm(Model model) {
+        model.addAttribute(&quot;book&quot;, new Book());
+        model.addAttribute(&quot;authors&quot;, authorService.findAllAuthors());
+        return &quot;book-form&quot;;
+    }
+
+    // Show Update Form
+    @GetMapping(&quot;/books/edit/{id}&quot;)
+    public String showUpdateForm(@PathVariable(&quot;id&quot;) Long id, Model model) {
+        Book book = bookService.findById(id);
+        model.addAttribute(&quot;book&quot;, book);
+        model.addAttribute(&quot;authors&quot;, authorService.findAllAuthors());
+        return &quot;book-form&quot;;
+    }
+
+    // Create / Update Operation
+    @PostMapping(&quot;/books/save&quot;)
+    public String saveBook(@Valid @ModelAttribute(&quot;book&quot;) Book book,
+                           BindingResult result,
+                           Model model,
+                           RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            model.addAttribute(&quot;authors&quot;, authorService.findAllAuthors());
+            return &quot;book-form&quot;;
+        }
+
+        try {
+            bookService.saveBook(book);
+            redirectAttributes.addFlashAttribute(&quot;successMessage&quot;, &quot;Book saved successfully!&quot;);
+        } catch (RuntimeException e) {
+            model.addAttribute(&quot;errorMessage&quot;, e.getMessage());
+            model.addAttribute(&quot;authors&quot;, authorService.findAllAuthors());
+            return &quot;book-form&quot;;
+        }
+
+        return &quot;redirect:/books&quot;;
+    }
+}
+</code></pre>
+<p><strong>Controller Endpoints:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>URL</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td><code>/</code></td>
+<td>Redirect to <code>/books</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/books</code></td>
+<td>List all books (Read)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/books/add</code></td>
+<td>Show Add Book form (Create)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/books/edit/{id}</code></td>
+<td>Show Edit Book form (Update)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/books/save</code></td>
+<td>Save new or updated book</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>3.6 View Layer (JSP)</h3>
+<h4><code>book-list.jsp</code> — Book Listing Page</h4>
+<pre><code class="language-jsp">&lt;%@ page language=&quot;java&quot; contentType=&quot;text/html; charset=UTF-8&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;%@ taglib uri=&quot;http://java.sun.com/jsp/jstl/core&quot; prefix=&quot;c&quot; %&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Library - Book List&lt;/title&gt;
+    &lt;style&gt;
+        body { font-family: &#39;Segoe UI&#39;, Tahoma, Geneva, Verdana, sans-serif;
+               background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff;
+                     padding: 30px; border-radius: 8px;
+                     box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db;
+             padding-bottom: 10px; }
+        .btn { padding: 10px 15px; color: #fff; background-color: #3498db;
+               text-decoration: none; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #ecf0f1; color: #2c3e50; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h1&gt;Library Management System&lt;/h1&gt;
+        &lt;c:if test=&quot;${not empty successMessage}&quot;&gt;
+            &lt;div class=&quot;alert alert-success&quot;&gt;${successMessage}&lt;/div&gt;
+        &lt;/c:if&gt;
+        &lt;a href=&quot;&lt;c:url value=&#39;/books/add&#39; /&gt;&quot; class=&quot;btn&quot;&gt;Add New Book&lt;/a&gt;
+        &lt;table&gt;
+            &lt;thead&gt;
+                &lt;tr&gt;
+                    &lt;th&gt;ID&lt;/th&gt;&lt;th&gt;Title&lt;/th&gt;&lt;th&gt;Author&lt;/th&gt;
+                    &lt;th&gt;ISBN&lt;/th&gt;&lt;th&gt;Publication Year&lt;/th&gt;&lt;th&gt;Actions&lt;/th&gt;
+                &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+                &lt;c:forEach var=&quot;book&quot; items=&quot;${books}&quot;&gt;
+                    &lt;tr&gt;
+                        &lt;td&gt;${book.id}&lt;/td&gt;
+                        &lt;td&gt;${book.title}&lt;/td&gt;
+                        &lt;td&gt;${book.author.name}&lt;/td&gt;
+                        &lt;td&gt;${book.isbn}&lt;/td&gt;
+                        &lt;td&gt;${book.publicationYear}&lt;/td&gt;
+                        &lt;td&gt;
+                            &lt;a href=&quot;&lt;c:url value=&#39;/books/edit/${book.id}&#39; /&gt;&quot;
+                               class=&quot;btn btn-edit&quot;&gt;Edit&lt;/a&gt;
+                        &lt;/td&gt;
+                    &lt;/tr&gt;
+                &lt;/c:forEach&gt;
+            &lt;/tbody&gt;
+        &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<h4><code>book-form.jsp</code> — Add / Edit Book Form</h4>
+<pre><code class="language-jsp">&lt;%@ page language=&quot;java&quot; contentType=&quot;text/html; charset=UTF-8&quot; pageEncoding=&quot;UTF-8&quot;%&gt;
+&lt;%@ taglib uri=&quot;http://java.sun.com/jsp/jstl/core&quot; prefix=&quot;c&quot; %&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Library - Book Form&lt;/title&gt;
+    &lt;style&gt;
+        /* Same base styling as book-list.jsp */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc;
+                        border-radius: 4px; box-sizing: border-box; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h1&gt;${empty book.id ? &#39;Add New Book&#39; : &#39;Edit Book&#39;}&lt;/h1&gt;
+
+        &lt;c:if test=&quot;${not empty errorMessage}&quot;&gt;
+            &lt;div class=&quot;alert alert-danger&quot;&gt;${errorMessage}&lt;/div&gt;
+        &lt;/c:if&gt;
+
+        &lt;form action=&quot;&lt;c:url value=&#39;/books/save&#39; /&gt;&quot; method=&quot;post&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;id&quot; value=&quot;${book.id}&quot;&gt;
+
+            &lt;div class=&quot;form-group&quot;&gt;
+                &lt;label for=&quot;title&quot;&gt;Title:&lt;/label&gt;
+                &lt;input type=&quot;text&quot; id=&quot;title&quot; name=&quot;title&quot;
+                       value=&quot;${book.title}&quot; required&gt;
+            &lt;/div&gt;
+
+            &lt;div class=&quot;form-group&quot;&gt;
+                &lt;label for=&quot;author&quot;&gt;Author:&lt;/label&gt;
+                &lt;select id=&quot;author&quot; name=&quot;author.id&quot; required&gt;
+                    &lt;option value=&quot;&quot;&gt;-- Select Author --&lt;/option&gt;
+                    &lt;c:forEach var=&quot;author&quot; items=&quot;${authors}&quot;&gt;
+                        &lt;option value=&quot;${author.id}&quot;
+                            ${book.author != null &amp;&amp; book.author.id == author.id
+                              ? &#39;selected&#39; : &#39;&#39;}&gt;
+                            ${author.name}
+                        &lt;/option&gt;
+                    &lt;/c:forEach&gt;
+                &lt;/select&gt;
+            &lt;/div&gt;
+
+            &lt;div class=&quot;form-group&quot;&gt;
+                &lt;label for=&quot;isbn&quot;&gt;ISBN:&lt;/label&gt;
+                &lt;input type=&quot;text&quot; id=&quot;isbn&quot; name=&quot;isbn&quot;
+                       value=&quot;${book.isbn}&quot; required&gt;
+            &lt;/div&gt;
+
+            &lt;div class=&quot;form-group&quot;&gt;
+                &lt;label for=&quot;publicationYear&quot;&gt;Publication Year:&lt;/label&gt;
+                &lt;input type=&quot;number&quot; id=&quot;publicationYear&quot; name=&quot;publicationYear&quot;
+                       value=&quot;${book.publicationYear}&quot; required&gt;
+            &lt;/div&gt;
+
+            &lt;div class=&quot;form-group&quot;&gt;
+                &lt;button type=&quot;submit&quot; class=&quot;btn&quot;&gt;Save&lt;/button&gt;
+                &lt;a href=&quot;&lt;c:url value=&#39;/books&#39; /&gt;&quot; class=&quot;btn btn-cancel&quot;&gt;Cancel&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/form&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<hr>
+<h2>4. CRUD Operations</h2>
+<h3>4.1 Populate Database</h3>
+<p>The database is automatically populated when the application starts. The file <code>src/main/resources/data.sql</code> contains INSERT statements for <strong>10 authors</strong> and <strong>10 books</strong>:</p>
+<pre><code class="language-sql">-- Authors (10 rows)
+INSERT INTO authors (name, biography) VALUES (&#39;J.K. Rowling&#39;, &#39;British author...&#39;);
+INSERT INTO authors (name, biography) VALUES (&#39;George R.R. Martin&#39;, &#39;American novelist...&#39;);
+INSERT INTO authors (name, biography) VALUES (&#39;J.R.R. Tolkien&#39;, &#39;English writer...&#39;);
+INSERT INTO authors (name, biography) VALUES (&#39;Agatha Christie&#39;, &#39;English writer...&#39;);
+INSERT INTO authors (name, biography) VALUES (&#39;Stephen King&#39;, &#39;American author...&#39;);
+INSERT INTO authors (name, biography) VALUES (&#39;Isaac Asimov&#39;, &#39;American writer...&#39;);
+INSERT INTO authors (name, biography) VALUES (&#39;Jane Austen&#39;, &#39;English novelist...&#39;);
+INSERT INTO authors (name, biography) VALUES (&#39;Charles Dickens&#39;, &#39;English writer...&#39;);
+INSERT INTO authors (name, biography) VALUES (&#39;Mark Twain&#39;, &#39;American writer...&#39;);
+INSERT INTO authors (name, biography) VALUES (&#39;Arthur Conan Doyle&#39;, &#39;British writer...&#39;);
+
+-- Books (10 rows)
+INSERT INTO books (title, isbn, publication_year, author_id)
+    VALUES (&#39;Harry Potter and the Sorcerer&#39;&#39;s Stone&#39;, &#39;978-0590353403&#39;, 1997, 1);
+INSERT INTO books (title, isbn, publication_year, author_id)
+    VALUES (&#39;A Game of Thrones&#39;, &#39;978-0553103540&#39;, 1996, 2);
+-- ... (8 more rows)
+</code></pre>
+<p>The configuration <code>spring.jpa.defer-datasource-initialization=true</code> ensures Hibernate creates the tables <strong>before</strong> the <code>data.sql</code> script runs.</p>
+<h3>4.2 Create Operation</h3>
+<p><strong>Flow:</strong> User clicks &quot;Add New Book&quot; → Form is displayed → User fills in details → Submits → Book is saved to DB.</p>
+<ul>
+<li><strong>Controller:</strong> <code>GET /books/add</code> creates a new empty <code>Book</code> object and passes all authors to the view for the dropdown.</li>
+<li><strong>Form:</strong> <code>book-form.jsp</code> renders with empty fields (since <code>book.id</code> is null, the heading shows &quot;Add New Book&quot;).</li>
+<li><strong>Submission:</strong> <code>POST /books/save</code> validates the input using <code>@Valid</code>. If validation fails, the form is re-displayed with error messages. If the ISBN already exists, the <code>catch</code> block in the service captures the <code>DataIntegrityViolationException</code> and displays an error message.</li>
+</ul>
+<h3>4.3 Read Operation</h3>
+<p><strong>Flow:</strong> User navigates to <code>/books</code> → Controller fetches all books using the custom join query → Data is displayed in a table.</p>
+<ul>
+<li><strong>Controller:</strong> <code>GET /books</code> calls <code>bookService.findAllBooks()</code>.</li>
+<li><strong>Service:</strong> Internally calls <code>bookRepository.findAllBooksWithAuthors()</code>, which executes the custom <code>@Query</code> with an <strong>INNER JOIN</strong> between <code>books</code> and <code>authors</code>.</li>
+<li><strong>View:</strong> <code>book-list.jsp</code> iterates using <code>&lt;c:forEach&gt;</code> and accesses the author name via Expression Language <code>${book.author.name}</code>.</li>
+</ul>
+<h3>4.4 Update Operation</h3>
+<p><strong>Flow:</strong> User clicks &quot;Edit&quot; on a book row → Pre-populated form is displayed → User modifies details → Submits → Book is updated in DB.</p>
+<ul>
+<li><strong>Controller:</strong> <code>GET /books/edit/{id}</code> loads the existing book and passes it to the same <code>book-form.jsp</code>.</li>
+<li><strong>Form:</strong> Since <code>book.id</code> is not null, the heading changes to &quot;Edit Book&quot;. A hidden <code>&lt;input type=&quot;hidden&quot; name=&quot;id&quot; value=&quot;${book.id}&quot;&gt;</code> ensures that JPA performs an <strong>UPDATE</strong> instead of an INSERT.</li>
+<li><strong>Submission:</strong> Same <code>POST /books/save</code> endpoint handles both create and update seamlessly.</li>
+</ul>
+<hr>
+<h2>5. Testing</h2>
+<h3>Unit Tests for Service Layer — <code>BookServiceTest.java</code></h3>
+<p>Uses <strong>JUnit 5</strong> with <strong>Mockito</strong> to test the service layer in isolation.</p>
+<pre><code class="language-java">@ExtendWith(MockitoExtension.class)
+public class BookServiceTest {
+
+    @Mock
+    private BookRepository bookRepository;
+
+    @InjectMocks
+    private BookService bookService;
+
+    private Book book;
+    private Author author;
+
+    @BeforeEach
+    void setUp() {
+        author = new Author(&quot;Test Author&quot;, &quot;Bio&quot;);
+        author.setId(1L);
+        book = new Book(&quot;Test Title&quot;, &quot;12345&quot;, 2023, author);
+        book.setId(1L);
+    }
+
+    @Test
+    void testFindAllBooks() {
+        when(bookRepository.findAllBooksWithAuthors()).thenReturn(Arrays.asList(book));
+        List&lt;Book&gt; books = bookService.findAllBooks();
+        assertNotNull(books);
+        assertEquals(1, books.size());
+        assertEquals(&quot;Test Title&quot;, books.get(0).getTitle());
+        verify(bookRepository, times(1)).findAllBooksWithAuthors();
+    }
+
+    @Test
+    void testFindById() {
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        Book found = bookService.findById(1L);
+        assertNotNull(found);
+        assertEquals(&quot;12345&quot;, found.getIsbn());
+    }
+
+    @Test
+    void testSaveBook() {
+        when(bookRepository.save(any(Book.class))).thenReturn(book);
+        Book savedBook = bookService.saveBook(book);
+        assertNotNull(savedBook);
+        assertEquals(&quot;Test Title&quot;, savedBook.getTitle());
+        verify(bookRepository, times(1)).save(book);
+    }
+}
+</code></pre>
+<h3>Integration Tests for Repository Layer — <code>BookRepositoryTest.java</code></h3>
+<p>Uses <strong><code>@DataJpaTest</code></strong> with an embedded H2 database to test the custom query.</p>
+<pre><code class="language-java">@DataJpaTest
+public class BookRepositoryTest {
+
+    @Autowired
+    private TestEntityManager entityManager;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Test
+    public void testFindAllBooksWithAuthors() {
+        Author author = new Author(&quot;Test Author 2&quot;, &quot;Bio&quot;);
+        entityManager.persist(author);
+
+        Book book1 = new Book(&quot;Book 1&quot;, &quot;111&quot;, 2000, author);
+        Book book2 = new Book(&quot;Book 2&quot;, &quot;222&quot;, 2001, author);
+        entityManager.persist(book1);
+        entityManager.persist(book2);
+        entityManager.flush();
+
+        List&lt;Book&gt; books = bookRepository.findAllBooksWithAuthors();
+
+        assertThat(books).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(books.get(0).getAuthor().getName()).isEqualTo(&quot;Test Author 2&quot;);
+    }
+}
+</code></pre>
+<hr>
+<h2>6. Screenshots</h2>
+<h3>Book List Page (Read Operation)</h3>
+<p><em>Displays all books fetched via the custom INNER JOIN query.</em></p>
+<p><img src="screenshots/book_list.png" alt="Book List Page"></p>
+<h3>Add New Book Form (Create Operation)</h3>
+<p><em>Form with fields for Title, Author (dropdown), ISBN, and Publication Year.</em></p>
+<p><img src="screenshots/book_form.png" alt="Add Book Form"></p>
+<h3>Edit Book Form (Update Operation)</h3>
+<p><em>Same form pre-populated with existing book data for editing.</em></p>
+<p><img src="screenshots/book_edit.png" alt="Edit Book Form"></p>
+<hr>
+<h2>7. Challenges Faced and Solutions</h2>
+<h3>Challenge 1: JSP Configuration in Modern Spring Boot</h3>
+<p><strong>Problem:</strong> Spring Boot 3.x favors Thymeleaf as the default template engine. JSP requires additional configuration that is not included by default.</p>
+<p><strong>Solution:</strong> Added <code>tomcat-embed-jasper</code> and JSTL dependencies to <code>pom.xml</code>, and configured the view resolver in <code>application.properties</code>:</p>
+<pre><code class="language-properties">spring.mvc.view.prefix=/WEB-INF/jsp/
+spring.mvc.view.suffix=.jsp
+</code></pre>
+<h3>Challenge 2: Database Initialization Timing</h3>
+<p><strong>Problem:</strong> Spring Boot 2.5+ changed the database initialization behavior. <code>data.sql</code> was executing before Hibernate created the tables, resulting in &quot;Table not found&quot; errors.</p>
+<p><strong>Solution:</strong> Added the property <code>spring.jpa.defer-datasource-initialization=true</code> to ensure that Hibernate generates the schema first (<code>ddl-auto=create-drop</code>), and only then runs the <code>data.sql</code> script.</p>
+<h3>Challenge 3: N+1 Query Problem</h3>
+<p><strong>Problem:</strong> When displaying the book list, accessing <code>book.getAuthor().getName()</code> for each book triggered a separate SQL query per book, leading to poor performance with large datasets.</p>
+<p><strong>Solution:</strong> Implemented a custom <code>JOIN FETCH</code> query in the <code>BookRepository</code>:</p>
+<pre><code class="language-java">@Query(&quot;SELECT b FROM Book b JOIN FETCH b.author&quot;)
+List&lt;Book&gt; findAllBooksWithAuthors();
+</code></pre>
+<p>This fetches all books and their associated authors in a <strong>single SQL query</strong> via an inner join.</p>
+<h3>Challenge 4: Data Binding for Nested Objects in Forms</h3>
+<p><strong>Problem:</strong> When submitting the book form, Spring MVC needed to bind the selected author dropdown value (an ID) to the <code>Book.author</code> object.</p>
+<p><strong>Solution:</strong> Used <code>name=&quot;author.id&quot;</code> in the <code>&lt;select&gt;</code> element, which allows Spring MVC&#39;s data binder to automatically resolve the author by its ID through the JPA entity manager.</p>
+<hr>
+<h2>8. GitHub URL</h2>
+<p><strong><a href="https://github.com/KADUMU0980/java-springboot">https://github.com/KADUMU0980/java-springboot</a></strong></p>
+<hr>
+<h2>Project Structure</h2>
+<pre><code>library-app/
+├── pom.xml
+├── src/
+│   ├── main/
+│   │   ├── java/com/example/libraryapp/
+│   │   │   ├── LibraryAppApplication.java
+│   │   │   ├── controller/
+│   │   │   │   └── LibraryController.java
+│   │   │   ├── entity/
+│   │   │   │   ├── Author.java
+│   │   │   │   └── Book.java
+│   │   │   ├── repository/
+│   │   │   │   ├── AuthorRepository.java
+│   │   │   │   └── BookRepository.java
+│   │   │   └── service/
+│   │   │       ├── AuthorService.java
+│   │   │       └── BookService.java
+│   │   ├── resources/
+│   │   │   ├── application.properties
+│   │   │   └── data.sql
+│   │   └── webapp/WEB-INF/jsp/
+│   │       ├── book-list.jsp
+│   │       └── book-form.jsp
+│   └── test/java/com/example/libraryapp/
+│       ├── repository/
+│       │   └── BookRepositoryTest.java
+│       └── service/
+│           └── BookServiceTest.java
+└── Project_Documentation.md
+</code></pre>
+
+</body>
+</html>

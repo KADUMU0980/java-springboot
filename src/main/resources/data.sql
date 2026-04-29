@@ -1,0 +1,21 @@
+INSERT INTO authors (name, biography) VALUES ('J.K. Rowling', 'British author, best known for the Harry Potter series.');
+INSERT INTO authors (name, biography) VALUES ('George R.R. Martin', 'American novelist and short story writer in the fantasy, horror, and science fiction genres.');
+INSERT INTO authors (name, biography) VALUES ('J.R.R. Tolkien', 'English writer, poet, philologist, and academic, best known as the author of the high fantasy works The Hobbit and The Lord of the Rings.');
+INSERT INTO authors (name, biography) VALUES ('Agatha Christie', 'English writer known for her 66 detective novels and 14 short story collections.');
+INSERT INTO authors (name, biography) VALUES ('Stephen King', 'American author of horror, supernatural fiction, suspense, crime, science-fiction, and fantasy novels.');
+INSERT INTO authors (name, biography) VALUES ('Isaac Asimov', 'American writer and professor of biochemistry at Boston University. He was known for his works of science fiction and popular science.');
+INSERT INTO authors (name, biography) VALUES ('Jane Austen', 'English novelist known primarily for her six major novels, which interpret, critique and comment upon the British landed gentry at the end of the 18th century.');
+INSERT INTO authors (name, biography) VALUES ('Charles Dickens', 'English writer and social critic. He created some of the world''s best-known fictional characters.');
+INSERT INTO authors (name, biography) VALUES ('Mark Twain', 'American writer, humorist, entrepreneur, publisher, and lecturer.');
+INSERT INTO authors (name, biography) VALUES ('Arthur Conan Doyle', 'British writer and medical doctor. He created the character Sherlock Holmes.');
+
+INSERT INTO books (title, isbn, publication_year, author_id) VALUES ('Harry Potter and the Sorcerer''s Stone', '978-0590353403', 1997, 1);
+INSERT INTO books (title, isbn, publication_year, author_id) VALUES ('A Game of Thrones', '978-0553103540', 1996, 2);
+INSERT INTO books (title, isbn, publication_year, author_id) VALUES ('The Fellowship of the Ring', '978-0618346257', 1954, 3);
+INSERT INTO books (title, isbn, publication_year, author_id) VALUES ('Murder on the Orient Express', '978-0007119318', 1934, 4);
+INSERT INTO books (title, isbn, publication_year, author_id) VALUES ('The Shining', '978-0385121675', 1977, 5);
+INSERT INTO books (title, isbn, publication_year, author_id) VALUES ('Foundation', '978-0553293357', 1951, 6);
+INSERT INTO books (title, isbn, publication_year, author_id) VALUES ('Pride and Prejudice', '978-0141439518', 1813, 7);
+INSERT INTO books (title, isbn, publication_year, author_id) VALUES ('A Tale of Two Cities', '978-0141439600', 1859, 8);
+INSERT INTO books (title, isbn, publication_year, author_id) VALUES ('The Adventures of Tom Sawyer', '978-0143039563', 1876, 9);
+INSERT INTO books (title, isbn, publication_year, author_id) VALUES ('The Hound of the Baskervilles', '978-0140437867', 1902, 10);
